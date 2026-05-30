@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('platform_fees', function (Blueprint $table) {
+       Schema::create('platform_fees', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('payment_id')->constrained('payments')->onDelete('cascade');
+            $table->decimal('fee_percent', 5, 2)->default(5);
+            $table->decimal('fee_amount', 10, 2);
+            $table->enum('disbursed_status', ['pending', 'disbursed'])->default('pending');
             $table->timestamps();
         });
     }

@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('return_logs', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('booking_id')->constrained('bookings')->onDelete('cascade');
+            $table->datetime('returned_at');
+            $table->decimal('late_fee', 10, 2)->default(0);
+            $table->string('condition')->nullable();
             $table->timestamps();
         });
     }

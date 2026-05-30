@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('super_admin_settings', function (Blueprint $table) {
+       Schema::create('super_admin_settings', function (Blueprint $table) {
             $table->id();
+            $table->string('key')->unique();
+            $table->text('value');
+            $table->string('description')->nullable();
             $table->timestamps();
         });
     }
