@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('platform_policies', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
+            $table->longText('content');
+            $table->enum('type', ['sop', 'tos', 'faq', 'other'])->default('other');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

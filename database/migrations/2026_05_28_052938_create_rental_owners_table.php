@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rental_owners', function (Blueprint $table) {
+       Schema::create('rental_owners', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('business_name');
+            $table->string('business_address');
+            $table->string('tax_number')->nullable();
+            $table->enum('verification_status', ['pending', 'verified', 'rejected'])->default('pending');
             $table->timestamps();
         });
     }
