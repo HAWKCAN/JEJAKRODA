@@ -43,7 +43,7 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
         return view('user.dashboard');
     });
     Route::get('/profile', [ProfileController::class, 'show']);
-    Route::patch('/profile', [ProfileController::class, 'update'])->middleware('auth')->name('profile.update');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::get('/bookings/create/{id}', [BookingController::class, 'create'])->name('booking.create');
     Route::post('/bookings', [BookingController::class, 'store']);
