@@ -10,7 +10,7 @@
 
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold" style="color: #0C1B33;">Jejak Roda</h1>
+           <a href="/"><h1 class="text-3xl font-bold" style="color: #0C1B33;">Jejak Roda</h1></a>
             <p class="text-sm mt-1" style="color: #9A9488;">Platform Rental Kendaraan</p>
         </div>
 

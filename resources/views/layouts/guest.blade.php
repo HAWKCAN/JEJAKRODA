@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard — Aspal Seru')</title>
+    <title>@yield('title', 'Aspal Seru — Sewa Kendaraan Purwokerto')</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -33,30 +33,22 @@
 </head>
 <body>
 
-    {{--   MOBILE:  USER  --}}
+    {{--  MOBILE --}}
     <div class="md:hidden sticky top-0 z-40">
         <div class="flex justify-between items-center px-4 py-3 shadow-md"
              style="background:#162740;">
-            <div>
-                <h1 class="font-extrabold text-base text-white">Aspal Seru</h1>
-                <p class="text-[11px]" style="color:#7DD3FC;">
-                    Halo, {{ auth()->user()->name }} 👋
-                </p>
-            </div>
-            {{-- Notif bell dengan badge --}}
-            <div class="relative cursor-pointer">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                </svg>
-                <span class="absolute -top-1 -right-1 w-4 h-4 text-[9px] font-bold text-white rounded-full flex items-center justify-center"
-                      style="background:#EF4444;">2</span>
+            <h1 class="font-extrabold text-lg text-white">Aspal Seru</h1>
+            <div class="flex flex-col gap-1.5 cursor-pointer">
+                <span class="block w-6 h-0.5 rounded" style="background:rgba(255,255,255,.8);"></span>
+                <span class="block w-6 h-0.5 rounded" style="background:rgba(255,255,255,.8);"></span>
+                <span class="block w-4 h-0.5 rounded ml-auto" style="background:rgba(255,255,255,.8);"></span>
             </div>
         </div>
 
-        {{-- Search + filter chip — opsional per halaman --}}
+        {{-- Search + filter chip — hanya muncul di halaman katalog --}}
         @hasSection('show-search')
         <div class="px-4 py-3 border-b shadow-sm" style="background:#FFFFFF; border-color:#E2E8F0;">
+            <p class="text-xs mb-2" style="color:#64748B;">Beranda / Katalog</p>
             <div class="flex gap-2 mb-3">
                 <input type="text" placeholder="Cari kendaraan..."
                        class="flex-1 rounded-lg px-4 py-2 text-sm outline-none border"
@@ -77,7 +69,7 @@
     </div>
 
 
-    {{--  DESKTOP: USER  --}}
+    {{-- DESKTOP: GUEST --}}
     <nav class="hidden md:flex justify-between items-center px-8 py-4 border-b"
          style="background:#FFFFFF; border-color:#E2E8F0;">
         <div class="flex items-center gap-12">
@@ -86,8 +78,8 @@
                 <p class="text-[10px] font-bold tracking-[.2em] uppercase" style="color:#0EA5E9;">Purwokerto</p>
             </div>
             <div class="flex gap-8 text-sm font-semibold" style="color:#64748B;">
-                <a href="/dashboard" class="border-b-2 pb-0.5" style="color:#162740; border-color:#162740;">Katalog</a>
-                <a href="/riwayat"   class="hover:opacity-80 transition-opacity">Riwayat</a>
+                <a href="/" class="border-b-2 pb-0.5" style="color:#162740; border-color:#162740;">Katalog</a>
+                <a href="#cara-sewa" class="hover:opacity-80 transition-opacity">Cara Sewa</a>
                 <a href="#kontak"    class="hover:opacity-80 transition-opacity">Kontak</a>
             </div>
         </div>
@@ -98,76 +90,46 @@
                        style="background:#F1F5F9; border-color:transparent;">
                 <span class="absolute right-3 top-1.5 text-xl font-bold" style="color:#0EA5E9;">⌕</span>
             </div>
-
-            {{-- Notif bell --}}
-            <div class="relative cursor-pointer">
-                <svg class="w-5 h-5" fill="none" stroke="#64748B" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                </svg>
-                <span class="absolute -top-1 -right-1 w-3.5 h-3.5 text-[8px] font-bold text-white rounded-full flex items-center justify-center"
-                      style="background:#EF4444;">2</span>
-            </div>
-
-            {{-- Avatar inisial + nama user --}}
-            <div class="flex items-center gap-2 cursor-pointer">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                     style="background:#162740;">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                </div>
-                <span class="text-sm font-semibold" style="color:#1E293B;">{{ auth()->user()->name }}</span>
-                <span style="color:#94A3B8;">▾</span>
-            </div>
-
-            {{-- Tombol Logout --}}
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit"
-                        class="text-sm font-semibold px-5 py-2 rounded-md border hover:opacity-75 transition-opacity"
-                        style="color:#EF4444; border-color:#FECACA;">
-                    Keluar
-                </button>
-            </form>
+            <a href="{{ route('login') }}"
+               class="text-sm font-semibold hover:opacity-75 transition-opacity"
+               style="color:#1E293B;">Masuk</a>
+            <a href="{{ route('register') }}"
+               class="text-sm font-semibold px-5 py-2 rounded-md text-white shadow-sm"
+               style="background:#162740;">Daftar</a>
+            <a href="{{ route('login') }}"
+               class="text-sm font-semibold px-5 py-2 rounded-md text-white shadow-sm"
+               style="background:#0EA5E9;">+ Sewa Kini</a>
         </div>
     </nav>
 
 
-    {{-- ISI HALAMAN --}}
+    {{--  ISI HALAMAN --}}
     @yield('content')
 
 
-    {{-- MOBILE--}}
+    {{--  MOBILE:  GUEST --}}
     <nav class="md:hidden fixed bottom-0 left-0 right-0 flex justify-around py-3 px-2 z-50 border-t"
          style="background:#FFFFFF; border-color:#E2E8F0; box-shadow:0 -4px 6px -1px rgba(0,0,0,.05);">
 
-        <a href="/dashboard"
-           class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl"
-           style="background:#EFF6FF;">
+        <a href="/" class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl" style="background:#EFF6FF;">
             <svg class="w-5 h-5" viewBox="0 0 20 20" fill="#0EA5E9">
                 <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7A1 1 0 003 11h1v7a1 1 0 001 1h4v-5h2v5h4a1 1 0 001-1v-7h1a1 1 0 00.707-1.707l-7-7z"/>
             </svg>
             <span class="text-[10px] font-bold" style="color:#0EA5E9;">Beranda</span>
         </a>
 
-        <a href="/booking" class="flex flex-col items-center gap-1 px-5 py-1.5" style="color:#94A3B8;">
+        <a href="{{ route('login') }}" class="flex flex-col items-center gap-1 px-5 py-1.5" style="color:#94A3B8;">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
             </svg>
-            <span class="text-[10px] font-medium">Pesan</span>
+            <span class="text-[10px] font-medium">Masuk</span>
         </a>
 
-        <a href="/riwayat" class="flex flex-col items-center gap-1 px-5 py-1.5" style="color:#94A3B8;">
+        <a href="{{ route('register') }}" class="flex flex-col items-center gap-1 px-5 py-1.5" style="color:#94A3B8;">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
             </svg>
-            <span class="text-[10px] font-medium">Riwayat</span>
-        </a>
-
-        <a href="/profil" class="flex flex-col items-center gap-1 px-5 py-1.5" style="color:#94A3B8;">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
-            <span class="text-[10px] font-medium">Profil</span>
+            <span class="text-[10px] font-medium">Daftar</span>
         </a>
 
     </nav>
