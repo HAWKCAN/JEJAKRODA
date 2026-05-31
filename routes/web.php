@@ -43,10 +43,11 @@ Route::middleware(['auth', 'checkRole:user'])->group(function () {
         return view('user.dashboard');
     });
     Route::get('/profile', [ProfileController::class, 'show']);
-    Route::patch('/profile', [ProfileController::class, 'update']);
-   Route::get('/bookings/create/{id}', [BookingController::class, 'create'])->name('booking.create');
+    Route::patch('/profile', [ProfileController::class, 'update'])->middleware('auth')->name('profile.update');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/bookings/create/{id}', [BookingController::class, 'create'])->name('booking.create');
     Route::post('/bookings', [BookingController::class, 'store']);
-    Route::get('/bookings/history', [BookingController::class, 'history']); // history sebelum {id}
+    Route::get('/bookings/history', [BookingController::class, 'history'])->name('booking.history'); // history sebelum {id}
     Route::get('/bookings/{id}', [BookingController::class, 'show']);
     Route::get('/payments/create', [PaymentController::class, 'create']);
     Route::post('/payments', [PaymentController::class, 'store']);

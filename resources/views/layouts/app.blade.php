@@ -1,3 +1,10 @@
+@php 
+    $styleaktif = 'text-[#162740] border-b-2 border-b-[#162740] pb-1 hover:text-[#4677bf] transition-colors';
+    $stylepasif = 'text-[#64748B] hover:opacity-80 transition-opacity';
+    $styleprofilaktif = 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ring-2 ring-offset-2 ring-[#162740] transition-all';
+    $styleprofilpasif = 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white hover:opacity-80 transition-all';
+
+@endphp
 
 <!DOCTYPE html>
 <html lang="id">
@@ -86,9 +93,9 @@
                 <p class="text-[10px] font-bold tracking-[.2em] uppercase" style="color:#0EA5E9;">Purwokerto</p>
             </div>
             <div class="flex gap-8 text-sm font-semibold" style="color:#64748B;">
-                <a href="/dashboard" class="border-b-2 pb-0.5" style="color:#162740; border-color:#162740;">Katalog</a>
-                <a href="/riwayat"   class="hover:opacity-80 transition-opacity">Riwayat</a>
-                <a href="#kontak"    class="hover:opacity-80 transition-opacity">Kontak</a>
+                <a href="/dashboard" class="{{ request()->is('dashboard') ? $styleaktif : $stylepasif }}">Katalog</a>
+                <a href="/riwayat"   class="{{ request()->is('riwayat') ? $styleaktif : $stylepasif }}">Riwayat</a>
+                <a href="#kontak"    class="{{ request()->is('kontak') ? $styleaktif : $stylepasif }}">Kontak</a>
             </div>
         </div>
         <div class="flex items-center gap-4">
@@ -111,10 +118,13 @@
 
             {{-- Avatar inisial + nama user --}}
             <div class="flex items-center gap-2 cursor-pointer">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                
+            <a href="/profile">
+                <div class="{{ request()->is('profile') ? $styleprofilaktif : $styleprofilpasif }}"
                      style="background:#162740;">
                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                 </div>
+            </a>
                 <span class="text-sm font-semibold" style="color:#1E293B;">{{ auth()->user()->name }}</span>
                 <span style="color:#94A3B8;">▾</span>
             </div>
@@ -137,40 +147,42 @@
 
 
     {{-- MOBILE--}}
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 flex justify-around py-3 px-2 z-50 border-t"
-         style="background:#FFFFFF; border-color:#E2E8F0; box-shadow:0 -4px 6px -1px rgba(0,0,0,.05);">
+ <nav class="md:hidden fixed bottom-0 left-0 right-0 flex justify-around py-3 px-2 z-50 border-t bg-white"
+     style="border-color:#E2E8F0; box-shadow:0 -4px 6px -1px rgba(0,0,0,.05);">
 
-        <a href="/dashboard"
-           class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl"
-           style="background:#EFF6FF;">
-            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="#0EA5E9">
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7A1 1 0 003 11h1v7a1 1 0 001 1h4v-5h2v5h4a1 1 0 001-1v-7h1a1 1 0 00.707-1.707l-7-7z"/>
-            </svg>
-            <span class="text-[10px] font-bold" style="color:#0EA5E9;">Beranda</span>
-        </a>
+    <a href="/dashboard"
+       class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors {{ request()->is('dashboard') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8] hover:bg-slate-50' }}">
+        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7A1 1 0 003 11h1v7a1 1 0 001 1h4v-5h2v5h4a1 1 0 001-1v-7h1a1 1 0 00.707-1.707l-7-7z"/>
+        </svg>
+        <span class="text-[10px] {{ request()->is('dashboard') ? 'font-bold' : 'font-medium' }}">Beranda</span>
+    </a>
 
-        <a href="/booking" class="flex flex-col items-center gap-1 px-5 py-1.5" style="color:#94A3B8;">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-            </svg>
-            <span class="text-[10px] font-medium">Pesan</span>
-        </a>
+    <a href="/booking" 
+       class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors {{ request()->is('booking') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8] hover:bg-slate-50' }}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <span class="text-[10px] {{ request()->is('booking') ? 'font-bold' : 'font-medium' }}">Pesan</span>
+    </a>
 
-        <a href="/riwayat" class="flex flex-col items-center gap-1 px-5 py-1.5" style="color:#94A3B8;">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span class="text-[10px] font-medium">Riwayat</span>
-        </a>
+    <a href="/riwayat" 
+       class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors {{ request()->is('riwayat') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8] hover:bg-slate-50' }}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span class="text-[10px] {{ request()->is('riwayat') ? 'font-bold' : 'font-medium' }}">Riwayat</span>
+    </a>
 
-        <a href="/profil" class="flex flex-col items-center gap-1 px-5 py-1.5" style="color:#94A3B8;">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
-            <span class="text-[10px] font-medium">Profil</span>
-        </a>
+    <a href="/profile" 
+       class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors {{ request()->is('profile') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8] hover:bg-slate-50' }}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        <span class="text-[10px] {{ request()->is('profile') ? 'font-bold' : 'font-medium' }}">Profil</span>
+    </a>
 
-    </nav>
+</nav>
 
     @stack('scripts')
 </body>
