@@ -1,6 +1,5 @@
 
-     dashboard.blade.php  →  route('/dashboard')
-     Isi halaman user setelah login: pesanan aktif + katalog.
+   
 
 @extends('layouts.app')
 
