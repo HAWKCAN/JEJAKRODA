@@ -19,9 +19,9 @@
 
     <div class="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm overflow-hidden">
         
-        <form action="/profile/update" method="POST">
+        <form action="{{ route('profile.update') }}" method="POST">
             @csrf
-            @method('PUT')
+            @method('PATCH')
 
             <div class="p-6 md:p-8 space-y-6">
                 
