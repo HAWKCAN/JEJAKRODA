@@ -1,8 +1,5 @@
 
-   
-
 @extends('layouts.app')
-
 @section('title', 'Dashboard — Aspal Seru')
 
 {{-- Aktifkan search bar mobile di layout --}}
