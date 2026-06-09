@@ -72,8 +72,7 @@ Route::middleware(['auth', 'isManager'])->prefix('manager')->group(function () {
 
 // SUPER ADMIN 
 Route::middleware(['auth', 'isSuperAdmin'])->prefix('superadmin')->group(function () {
-    Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])
-    ->name('superadmin.dashboard');
+    Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('superadmin.dashboard');
     Route::get('users', [SuperAdminUserController::class, 'index']);
     Route::get('users/{id}', [SuperAdminUserController::class, 'show']);
     Route::delete('users/{id}', [SuperAdminUserController::class, 'destroy']);
