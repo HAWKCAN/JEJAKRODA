@@ -85,3 +85,41 @@ Route::middleware(['auth', 'isSuperAdmin'])->prefix('superadmin')->group(functio
     Route::post('backup', [SuperAdminBackupController::class, 'run']);
     Route::get('logs', [SuperAdminLogController::class, 'index']);
 });
+
+// BAGIAN PEMESANAN KENDARAAN
+// ─── User: Pemesanan Kendaraan ────────────────────────────────
+Route::middleware(['auth'])->group(function () {
+    Route::get('/bookings/history',          [BookingController::class, 'history'])->name('bookings.history');
+    Route::get('/bookings/create/{vehicle}', [BookingController::class, 'create'])->name('bookings.create');
+    Route::post('/bookings',                 [BookingController::class, 'store'])->name('bookings.store');
+    Route::get('/bookings/{booking}',        [BookingController::class, 'show'])->name('bookings.show');
+});
+
+
+// ─── User: Pembayaran ─────────────────────────────────────────
+Route::middleware(['auth'])->group(function () {
+    Route::get('/payments/{booking}/create', [PaymentController::class, 'create'])->name('payments.create');
+    Route::post('/payments/{booking}',       [PaymentController::class, 'store'])->name('payments.store');
+});
+
+
+// ─── Manager: Kelola Booking & Pengembalian ───────────────────
+Route::middleware(['auth', 'isManager'])->prefix('manager')->name('manager.')->group(function () {
+    Route::get('/bookings',                       [ManagerBookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{booking}',             [ManagerBookingController::class, 'show'])->name('bookings.show');
+    Route::post('/bookings/{booking}/confirm',    [ManagerBookingController::class, 'confirm'])->name('bookings.confirm');
+    Route::post('/bookings/{booking}/reject',     [ManagerBookingController::class, 'reject'])->name('bookings.reject');
+
+    Route::get('/returns/{booking}/create',       [ReturnController::class, 'create'])->name('returns.create');
+    Route::post('/returns/{booking}',             [ReturnController::class, 'store'])->name('returns.store');
+
+    Route::get('/reports',                        [ManagerReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export',                 [ManagerReportController::class, 'export'])->name('reports.export');
+});
+
+
+// ─── SuperAdmin: Backup ───────────────────────────────────────
+Route::middleware(['auth', 'isSuperAdmin'])->prefix('superAdmin')->name('superAdmin.')->group(function () {
+    Route::get('/backup',        [SuperAdminBackupController::class, 'index'])->name('backup.index');
+    Route::post('/backup/run',   [SuperAdminBackupController::class, 'run'])->name('backup.run');
+});
