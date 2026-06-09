@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
@@ -7,48 +6,42 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class BookingNotification extends Notification
+class BookingNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct()
+    protected $bookingData;
+
+    public function __construct($bookingData)
     {
-        //
+        $this->bookingData = $bookingData;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
+    // 1. Tentukan Channel (Database & Mail)
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
+    // 2. Format untuk Email
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+                    ->subject('Notifikasi Booking Baru')
+                    ->greeting('Halo ' . $notifiable->name . ',')
+                    ->line('Ada booking baru dengan ID: ' . $this->bookingData['id'])
+                    ->action('Lihat Booking', url('/bookings/' . $this->bookingData['id']))
+                    ->line('Terima kasih telah menggunakan aplikasi kami!');
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
+    // 3. Format untuk Database (akan ditampilkan di Navbar)
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'title' => 'Booking Baru',
+            'message' => 'Booking #'.$this->bookingData['id'].' berhasil dibuat.',
+            'url' => url('/bookings/' . $this->bookingData['id']),
+            'icon' => 'calendar' // Bisa disesuaikan untuk icon di view
         ];
     }
 }

@@ -51,7 +51,7 @@ class AuthController extends Controller
 
     public function redirectByRole($role){
         return match($role){
-            'superAdmin' => 'superAdmin/dashboard',
+            'superAdmin' => 'superadmin/dashboard',
             'manager' => 'manager/dashboard',
             default => 'dashboard',
         };

@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class PlatformPolicy extends Model
 {
-    //
+     protected $fillable = ['title', 'content', 'type', 'is_active'];
 }

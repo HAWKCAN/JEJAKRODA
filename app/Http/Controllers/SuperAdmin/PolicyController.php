@@ -3,48 +3,57 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Policy;
+use App\Models\PlatformPolicy;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+
 class PolicyController extends Controller
 {
-    public function index(){
-        $policies = Policy::latest()->get();
+    public function index()
+    {
+        $policies = PlatformPolicy::latest()->get();
         return view('superadmin.policies.index', compact('policies'));
     }
 
-    public function store (Request $request){
+    public function store(Request $request)
+    {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title'   => 'required|string|max:255',
             'content' => 'required|string',
+            'type'    => 'required|in:sop,tos,faq,other',
         ]);
 
-        Policy::create([
-            'title' => $request->title,
-            'slug'=> Str::slug($request->title),
-            'content' => $request->content,
-
+        PlatformPolicy::create([
+            'title'     => $request->title,
+            'content'   => $request->content,
+            'type'      => $request->type,
+            'is_active' => true,
         ]);
+
         return back()->with('success', 'Kebijakan berhasil ditambahkan.');
     }
 
-    public function update (Request $request,$id){
+    public function update(Request $request, $id)
+    {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title'   => 'required|string|max:255',
             'content' => 'required|string',
+            'type'    => 'required|in:sop,tos,faq,other',
         ]);
 
-        $policy = Policy::findOrFail($id);
+        $policy = PlatformPolicy::findOrFail($id);
         $policy->update([
-            'title' => $request->title,
-            'slug'=> Str::slug($request->title),
-            'content' => $request->content,
+            'title'     => $request->title,
+            'content'   => $request->content,
+            'type'      => $request->type,
+            'is_active' => $request->has('is_active'),
         ]);
+
         return back()->with('success', 'Kebijakan berhasil diperbarui.');
     }
 
-    public function destroy($id){
-        Policy::findOrFail($id)->delete();
+    public function destroy($id)
+    {
+        PlatformPolicy::findOrFail($id)->delete();
         return back()->with('success', 'Kebijakan berhasil dihapus.');
     }
 }
