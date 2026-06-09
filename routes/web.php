@@ -78,8 +78,11 @@ Route::middleware(['auth', 'isSuperAdmin'])->prefix('superadmin')->group(functio
     Route::delete('users/{id}', [SuperAdminUserController::class, 'destroy']);
     Route::patch('users/{id}/verify', [SuperAdminUserController::class, 'verifyManager']);
     Route::resource('policies', PolicyController::class);
-    Route::get('settings', [SettingController::class, 'index']);
-    Route::patch('settings', [SettingController::class, 'update']);
+    Route::get('/policiesPublic', [PolicyPublicController::class, 'index']);
+    Route::get('/policiesPublic/{id}', [PolicyPublicController::class, 'show']);
+
+    Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::patch('settings', [SettingController::class, 'update'])->name('settings.update');
     Route::get('backup', [SuperAdminBackupController::class, 'index']);
     Route::post('backup', [SuperAdminBackupController::class, 'run']);
     Route::get('logs', [SuperAdminLogController::class, 'index']);
