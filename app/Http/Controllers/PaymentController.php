@@ -7,6 +7,8 @@ use App\Models\Payment;
 use App\Models\PlatformFee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\PaymentNotification;
+use App\Models\User;
 
 class PaymentController extends Controller
 {
@@ -63,12 +65,29 @@ class PaymentController extends Controller
             'paid_at'    => now(),
         ]);
 
+                // Notif ke user
+        auth()->user()->notify(new PaymentNotification(
+            'Pembayaran Dikirim',
+            'Bukti pembayaran kamu sedang diverifikasi oleh manager.',
+            url('/bookings/' . $booking->id)
+        ));
+
+        // Notif ke manager pemilik kendaraan
+        $manager = $booking->vehicle->rentalOwner->user ?? null;
+        if ($manager) {
+            $manager->notify(new PaymentNotification(
+                'Pembayaran Baru Masuk',
+                auth()->user()->name . ' mengirim bukti pembayaran untuk booking #' . $booking->id,
+                url('/manager/bookings/' . $booking->id)
+            ));
+        }
+
         // Otomatis buat record PlatformFee saat payment dibuat
         PlatformFee::create([
             'payment_id'      => $payment->id,
             'fee_percent'     => self::PLATFORM_FEE_PERCENT,
             'fee_amount'      => $booking->platform_fee_amount,
-            'disbursed_status' => false,
+            
         ]);
 
         return redirect()->route('bookings.history')

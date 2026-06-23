@@ -1,11 +1,12 @@
-@php 
+@php
     $styleaktif = 'text-[#162740] border-b-2 border-b-[#162740] pb-1 hover:text-[#4677bf] transition-colors';
     $stylepasif = 'text-[#64748B] hover:opacity-80 transition-opacity';
     $styleprofilaktif = 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ring-2 ring-offset-2 ring-[#162740] transition-all';
     $styleprofilpasif = 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white hover:opacity-80 transition-all';
 
+    $unread = auth()->check() ? auth()->user()->unreadNotifications->count() : 0;
+    $notifList = auth()->check() ? auth()->user()->notifications()->latest()->take(5)->get() : collect();
 @endphp
-
 
 <!DOCTYPE html>
 <html lang="id">
@@ -17,7 +18,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* ── Warna utama (hex tetap) ── */
         :root {
             --navy:   #162740;
             --sky:    #0EA5E9;
@@ -32,7 +32,7 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #F8FAFC;
             color: #1E293B;
-            padding-bottom: 5rem; /* ruang bottom nav mobile */
+            padding-bottom: 5rem;
         }
         .no-scroll::-webkit-scrollbar { display: none; }
         .no-scroll { -ms-overflow-style: none; scrollbar-width: none; }
@@ -41,7 +41,7 @@
 </head>
 <body>
 
-    {{--   MOBILE:  USER  --}}
+    {{-- MOBILE HEADER --}}
     <div class="md:hidden sticky top-0 z-40">
         <div class="flex justify-between items-center px-4 py-3 shadow-md"
              style="background:#162740;">
@@ -51,18 +51,26 @@
                     Halo, {{ auth()->user()->name }} 👋
                 </p>
             </div>
-            {{-- Notif bell dengan badge --}}
-            <div class="relative cursor-pointer">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                </svg>
-                <span class="absolute -top-1 -right-1 w-4 h-4 text-[9px] font-bold text-white rounded-full flex items-center justify-center"
-                      style="background:#EF4444;">2</span>
+
+            {{-- Bell Mobile --}}
+            <div style="position:relative;" id="notif-wrapper-mobile">
+                <button onclick="toggleNotif(event, 'notif-wrapper-mobile')"
+                    style="background:none;border:none;cursor:pointer;
+                           position:relative;padding:.4rem;display:flex;">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                         stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    @if($unread > 0)
+                    <span class="absolute -top-1 -right-1 w-4 h-4 text-[9px] font-bold text-white rounded-full flex items-center justify-center"
+                          style="background:#EF4444;">{{ $unread > 9 ? '9+' : $unread }}</span>
+                    @endif
+                </button>
+                @include('components.notif-dropdown', ['wrapperId' => 'notif-wrapper-mobile'])
             </div>
         </div>
 
-        {{-- Search + filter chip — opsional per halaman --}}
         @hasSection('show-search')
         <div class="px-4 py-3 border-b shadow-sm" style="background:#FFFFFF; border-color:#E2E8F0;">
             <div class="flex gap-2 mb-3">
@@ -84,8 +92,7 @@
         @endif
     </div>
 
-
-    {{--  DESKTOP: USER  --}}
+    {{-- DESKTOP NAVBAR --}}
     <nav class="hidden md:flex justify-between items-center px-8 py-4 border-b"
          style="background:#FFFFFF; border-color:#E2E8F0;">
         <div class="flex items-center gap-12">
@@ -95,42 +102,55 @@
             </div>
             <div class="flex gap-8 text-sm font-semibold" style="color:#64748B;">
                 <a href="/dashboard" class="{{ request()->is('dashboard') ? $styleaktif : $stylepasif }}">Katalog</a>
-                <a href="/riwayat"   class="{{ request()->is('riwayat') ? $styleaktif : $stylepasif }}">Riwayat</a>
-                <a href="#kontak"    class="{{ request()->is('kontak') ? $styleaktif : $stylepasif }}">Kontak</a>
+                <a href="/bookings/history" class="{{ request()->is('bookings/history') ? $styleaktif : $stylepasif }}">Riwayat</a>
+                <a href="/contact" class="{{ $stylepasif }}">Kontak</a>
+                <a href="/policies" class="{{ request()->is('policies*') ? $styleaktif : $stylepasif }}">SOP</a>
             </div>
         </div>
         <div class="flex items-center gap-4">
             <div class="relative">
-                <input type="text" placeholder="Cari kendaraan, tipe..."
-                       class="rounded-full pl-4 pr-10 py-2 text-sm w-64 outline-none border"
-                       style="background:#F1F5F9; border-color:transparent;">
-                <span class="absolute right-3 top-1.5 text-xl font-bold" style="color:#0EA5E9;">⌕</span>
+                <form action="{{ route('dashboard') }}" method="GET" class="relative">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kendaraan, tipe..."
+                        class="rounded-full pl-4 pr-10 py-2 text-sm w-64 outline-none border"
+                        style="background:#F1F5F9; border-color:transparent;">
+                        
+                    <button type="submit" class="absolute right-3 top-1.5 text-xl font-bold hover:opacity-75" style="color:#0EA5E9;">
+                        ⌕
+                    </button>
+                </form>
             </div>
 
-            {{-- Notif bell --}}
-            <div class="relative cursor-pointer">
-                <svg class="w-5 h-5" fill="none" stroke="#64748B" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                </svg>
-                <span class="absolute -top-1 -right-1 w-3.5 h-3.5 text-[8px] font-bold text-white rounded-full flex items-center justify-center"
-                      style="background:#EF4444;">2</span>
+            {{-- Bell Desktop --}}
+            <div style="position:relative;" id="notif-wrapper">
+                <button onclick="toggleNotif(event, 'notif-wrapper')"
+                    style="background:none;border:none;cursor:pointer;
+                           position:relative;padding:.4rem;display:flex;align-items:center;">
+                    <svg class="w-5 h-5" fill="none" stroke="#64748B"
+                         stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    @if($unread > 0)
+                    <span class="absolute -top-1 -right-1 w-3.5 h-3.5 text-[8px] font-bold text-white rounded-full flex items-center justify-center"
+                          style="background:#EF4444;">{{ $unread > 9 ? '9+' : $unread }}</span>
+                    @endif
+                </button>
+                @include('components.notif-dropdown', ['wrapperId' => 'notif-wrapper'])
             </div>
 
-            {{-- Avatar inisial + nama user --}}
+            {{-- Avatar --}}
             <div class="flex items-center gap-2 cursor-pointer">
-                
-            <a href="/profile">
-                <div class="{{ request()->is('profile') ? $styleprofilaktif : $styleprofilpasif }}"
-                     style="background:#162740;">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                </div>
-            </a>
+                <a href="/profile">
+                    <div class="{{ request()->is('profile') ? $styleprofilaktif : $styleprofilpasif }}"
+                         style="background:#162740;">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    </div>
+                </a>
                 <span class="text-sm font-semibold" style="color:#1E293B;">{{ auth()->user()->name }}</span>
                 <span style="color:#94A3B8;">▾</span>
             </div>
 
-            {{-- Tombol Logout --}}
+            {{-- Logout --}}
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"
@@ -142,48 +162,68 @@
         </div>
     </nav>
 
-
-    {{-- ISI HALAMAN --}}
+    {{-- KONTEN --}}
     @yield('content')
 
+    {{-- MOBILE BOTTOM NAV --}}
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 flex justify-around py-3 px-2 z-50 border-t bg-white"
+         style="border-color:#E2E8F0; box-shadow:0 -4px 6px -1px rgba(0,0,0,.05);">
 
-    {{-- MOBILE--}}
- <nav class="md:hidden fixed bottom-0 left-0 right-0 flex justify-around py-3 px-2 z-50 border-t bg-white"
-     style="border-color:#E2E8F0; box-shadow:0 -4px 6px -1px rgba(0,0,0,.05);">
+        <a href="/dashboard"
+           class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors {{ request()->is('dashboard') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8]' }}">
+            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7A1 1 0 003 11h1v7a1 1 0 001 1h4v-5h2v5h4a1 1 0 001-1v-7h1a1 1 0 00.707-1.707l-7-7z"/>
+            </svg>
+            <span class="text-[10px] {{ request()->is('dashboard') ? 'font-bold' : 'font-medium' }}">Beranda</span>
+        </a>
 
-    <a href="/dashboard"
-       class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors {{ request()->is('dashboard') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8] hover:bg-slate-50' }}">
-        <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7A1 1 0 003 11h1v7a1 1 0 001 1h4v-5h2v5h4a1 1 0 001-1v-7h1a1 1 0 00.707-1.707l-7-7z"/>
-        </svg>
-        <span class="text-[10px] {{ request()->is('dashboard') ? 'font-bold' : 'font-medium' }}">Beranda</span>
-    </a>
+        <a href="/bookings/history"
+           class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors {{ request()->is('bookings/history') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8]' }}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-[10px] {{ request()->is('bookings/history') ? 'font-bold' : 'font-medium' }}">Riwayat</span>
+        </a>
 
-    <a href="/booking" 
-       class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors {{ request()->is('booking') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8] hover:bg-slate-50' }}">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-        </svg>
-        <span class="text-[10px] {{ request()->is('booking') ? 'font-bold' : 'font-medium' }}">Pesan</span>
-    </a>
+        {{-- Bell Mobile Bottom --}}
+        <a href="{{ route('notifications.index') }}"
+           class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors relative {{ request()->is('notifications') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8]' }}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            @if($unread > 0)
+            <span style="position:absolute;top:0;right:8px;background:#EF4444;color:#fff;
+                         font-size:.55rem;font-weight:700;padding:.1rem .3rem;
+                         border-radius:99px;min-width:.9rem;text-align:center;">
+                {{ $unread > 9 ? '9+' : $unread }}
+            </span>
+            @endif
+            <span class="text-[10px] {{ request()->is('notifications') ? 'font-bold' : 'font-medium' }}">Notif</span>
+        </a>
 
-    <a href="/riwayat" 
-       class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors {{ request()->is('riwayat') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8] hover:bg-slate-50' }}">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <span class="text-[10px] {{ request()->is('riwayat') ? 'font-bold' : 'font-medium' }}">Riwayat</span>
-    </a>
+        <a href="/profile"
+           class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors {{ request()->is('profile') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8]' }}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            <span class="text-[10px] {{ request()->is('profile') ? 'font-bold' : 'font-medium' }}">Profil</span>
+        </a>
 
-    <a href="/profile" 
-       class="flex flex-col items-center gap-1 px-5 py-1.5 rounded-xl transition-colors {{ request()->is('profile') ? 'bg-[#EFF6FF] text-[#0EA5E9]' : 'text-[#94A3B8] hover:bg-slate-50' }}">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-        </svg>
-        <span class="text-[10px] {{ request()->is('profile') ? 'font-bold' : 'font-medium' }}">Profil</span>
-    </a>
+    </nav>
 
-</nav>
+    <script>
+    function toggleNotif(e, wrapperId) {
+        e.stopPropagation();
+        const dd = document.getElementById('notif-dd-' + wrapperId);
+        if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+    }
+    document.addEventListener('click', function() {
+        document.querySelectorAll('[id^="notif-dd-"]').forEach(el => {
+            el.style.display = 'none';
+        });
+    });
+    </script>
 
     @stack('scripts')
 </body>

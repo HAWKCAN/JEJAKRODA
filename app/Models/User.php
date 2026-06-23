@@ -31,4 +31,5 @@ class User extends Authenticatable
     public function isManager(): bool    { return $this->role === 'manager'; }
     public function isSuperAdmin(): bool { return $this->role === 'superAdmin'; }
     public function isUser(): bool       { return $this->role === 'user'; }
+    public function rentalOwner()        { return $this->hasOne(RentalOwner::class);}
 }

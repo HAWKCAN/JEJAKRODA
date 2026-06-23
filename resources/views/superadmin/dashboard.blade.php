@@ -246,7 +246,7 @@
 {{-- ── Tabel Disbursement per Manager ── --}}
 <div class="card">
     <div class="card-header">
-        <span class="card-title">Disbursement per Manager</span>
+        <span class="card-title">Pendapatan per Manager</span>
         <span style="font-size:.72rem;color:#94A3B8;">{{ count($tabelManager) }} manager</span>
     </div>
     <div style="overflow-x:auto;">
@@ -258,16 +258,14 @@
                     <th>Status</th>
                     <th>Kendaraan</th>
                     <th>Booking</th>
-                    <th>Fee Disbursed</th>
-                    <th>Fee Pending</th>
+                    <th>Fee Platform</th>
+                    <th>Pendapatan Manager</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($tabelManager as $row)
                 <tr>
-                    <td>
-                        <div style="font-weight:600;">{{ $row['nama'] }}</div>
-                    </td>
+                    <td><div style="font-weight:600;">{{ $row['nama'] }}</div></td>
                     <td>{{ $row['bisnis'] }}</td>
                     <td>
                         <span class="badge badge-{{ $row['status'] === 'verified' ? 'verified' : ($row['status'] === 'rejected' ? 'rejected' : 'pending') }}">
@@ -276,12 +274,8 @@
                     </td>
                     <td style="text-align:center;">{{ $row['total_kendaraan'] }}</td>
                     <td style="text-align:center;">{{ $row['total_booking'] }}</td>
-                    <td class="disbursed-ok">
-                        Rp {{ number_format($row['fee_disbursed'], 0, ',', '.') }}
-                    </td>
-                    <td class="{{ $row['fee_pending'] > 0 ? 'disbursed-wait' : '' }}">
-                        Rp {{ number_format($row['fee_pending'], 0, ',', '.') }}
-                    </td>
+                    <td class="disbursed-ok">Rp {{ number_format($row['total_fee'], 0, ',', '.') }}</td>
+                    <td>Rp {{ number_format($row['total_pendapatan'], 0, ',', '.') }}</td>
                 </tr>
                 @empty
                 <tr>

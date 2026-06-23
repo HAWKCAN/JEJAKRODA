@@ -10,7 +10,7 @@ class PolicyController extends Controller
 {
     public function index()
     {
-        $policies = PlatformPolicy::latest()->get();
+        $policies = PlatformPolicy::latest()->paginate(15);
         return view('superadmin.policies.index', compact('policies'));
     }
 

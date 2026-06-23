@@ -127,6 +127,13 @@
                             </div>
                         </div>
 
+                        @if (session('error'))
+                            <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-5 text-sm">
+                                <strong class="font-semibold block mb-1">Pemesanan Gagal:</strong>
+                                <p>{{ session('error') }}</p>
+                            </div>
+                        @endif
+
                         {{-- Tombol Submit --}}
                         <button type="submit"
                                 class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-3 rounded-xl transition-colors duration-150 text-sm">

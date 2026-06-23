@@ -3,42 +3,53 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use App\Models\RentalOwner;
+
 use App\Models\User;
+use App\Models\RentalOwner;
 use Illuminate\Http\Request;
+
 class SuperAdminUserController extends Controller
-{    
-    // Tampilkan semua user dengan filter role dan pencarian nama/email
+{
     public function index(Request $request)
     {
-        $users = User::query()
-            ->when($request->role, fn($q) => $q->where('role', $request->role))
-            ->when($request->search, fn($q) => $q
-                ->where('name', 'like', "%{$request->search}%")
-                ->orWhere('email', 'like', "%{$request->search}%"))
-            ->latest()
-            ->paginate(15);
+        $query = User::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        $users = $query->with('rentalOwner')->latest()->paginate(15);
 
         return view('superadmin.users.index', compact('users'));
     }
-    // Tampilkan detail user
-    public function show($id){
+
+    public function show($id)
+    {
         $user = User::with('rentalOwner')->findOrFail($id);
-        return view('superadmin.users.show',compact('user'));
+        return view('superadmin.users.show', compact('user'));
     }
 
-    // Hapus user
     public function destroy($id)
     {
-        if (auth()->id() == $id) {
-            return back()->with('error', 'Tidak bisa menghapus diri sendiri.');
+        $user = User::findOrFail($id);
+
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
         }
-        User::findOrFail($id)->delete(); // fix: findOrdFail → findOrFail
+
+        $user->delete();
+
         return back()->with('success', 'User berhasil dihapus.');
     }
 
-
-    // Verifikasi manager
     public function verifyManager(Request $request, $id)
     {
         $request->validate(['status' => 'required|in:verified,rejected']);
@@ -46,7 +57,7 @@ class SuperAdminUserController extends Controller
         $rentalOwner = RentalOwner::whereHas('user', fn($q) => $q->where('id', $id))
             ->firstOrFail();
 
-        $rentalOwner->update(['verification_status' => $request->status]); // fix typo
+        $rentalOwner->update(['verification_status' => $request->status]);
 
         $pesan = $request->status === 'verified'
             ? 'Manager berhasil diverifikasi.'
@@ -54,7 +65,4 @@ class SuperAdminUserController extends Controller
 
         return back()->with('success', $pesan);
     }
-
-
-
 }

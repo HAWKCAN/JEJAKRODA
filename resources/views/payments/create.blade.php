@@ -91,6 +91,24 @@
                             @enderror
                         </div>
 
+                        {{-- Metode Pembayaran --}}
+                        <div>
+                            @error('method')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Info Rekening Bank (Ditampilkan via JS jika Transfer dipilih) --}}
+                        <div id="bank-info-section" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
+                            <h4 class="font-semibold text-blue-800 mb-2">💳 Informasi Rekening Tujuan</h4>
+                            <div class="space-y-1 text-blue-700 text-xs">
+                                <p>Bank: <span class="font-bold text-sm">BCA</span></p>
+                                <p>No. Rekening: <span class="font-bold text-sm">1234 5678 90</span></p>
+                                <p>Atas Nama: <span class="font-bold text-sm">Manager / Aspal Seru</span></p>
+                                <p class="mt-2 text-blue-600 italic">* Silakan transfer tepat sesuai dengan Total Bayar ke rekening di atas sebelum mengunggah bukti.</p>
+                            </div>
+                        </div>
+
                         {{-- Upload Bukti --}}
                         <div>
                             <label for="proof" class="block text-sm font-medium text-gray-700 mb-1">
@@ -145,6 +163,32 @@
         if (this.files && this.files[0]) {
             label.innerHTML = '<span class="font-medium text-indigo-600">' + this.files[0].name + '</span>';
         }
+    });
+
+    // Toggle Info Rekening Bank
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentRadios = document.querySelectorAll('input[name="method"]');
+        const bankInfoSection = document.getElementById('bank-info-section');
+
+        function toggleBankInfo() {
+            // Cari radio button yang sedang dipilih
+            const selectedMethod = document.querySelector('input[name="method"]:checked');
+            
+            // Jika yang dipilih adalah 'transfer', hilangkan class 'hidden'
+            if (selectedMethod && selectedMethod.value === 'transfer') {
+                bankInfoSection.classList.remove('hidden');
+            } else {
+                bankInfoSection.classList.add('hidden');
+            }
+        }
+
+        // Jalankan sekali saat halaman pertama kali dimuat
+        toggleBankInfo();
+
+        // Tambahkan event listener ketika pilihan diubah
+        paymentRadios.forEach(radio => {
+            radio.addEventListener('change', toggleBankInfo);
+        });
     });
 </script>
 @endpush

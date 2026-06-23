@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.manager')
 
 @section('title', 'Catat Pengembalian #' . $booking->id)
 
@@ -61,7 +61,7 @@
 
             {{-- Form Pengembalian --}}
             <div class="lg:col-span-3">
-                <form action="{{ route('manager.returns.store', $booking) }}" method="POST" id="return-form">
+               <form action="{{ route('manager.returns.store', ['booking' => $booking->id]) }}" method="POST" id="return-form">
                     @csrf
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
                         <h3 class="font-semibold text-gray-800 text-lg border-b pb-3">Detail Pengembalian</h3>

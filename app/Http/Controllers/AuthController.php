@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
 use App\Models\User;
+use App\Models\RentalOwner;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,14 +16,26 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function store (RegisterRequest $request){
+   public function store (RegisterRequest $request){
+        // dd($request->only(['role', 'business_name', 'business_address']));
+    
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'pohone_number' => $request->phone_number,
+            'phone_number' => $request->phone_number,
             'role' => $request->role ?? 'user',
         ]);
+
+        if ($user->role === 'manager') {
+            RentalOwner::create([
+                'user_id' => $user->id,
+                'business_name' => $request->business_name,
+                'business_address' => $request->business_address,
+                'tax_number' => $request->tax_number,
+                'verification_status' => 'pending',
+            ]);
+        }
 
         Auth::login($user);
         return redirect($this->redirectByRole($user->role));
@@ -56,5 +69,4 @@ class AuthController extends Controller
             default => 'dashboard',
         };
     }
-
 }

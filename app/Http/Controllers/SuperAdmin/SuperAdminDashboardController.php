@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\PlatformFee;
@@ -57,33 +58,30 @@ class SuperAdminDashboardController extends Controller
             ->withCount('vehicles')
             ->get()
             ->map(function ($owner) {
-                // Total booking completed milik owner ini
                 $totalBooking = Booking::whereHas('vehicle', fn($q) => $q->where('rental_owner_id', $owner->id))
                     ->whereIn('status', ['confirmed', 'completed'])
                     ->count();
 
-                // Fee yang sudah disbursed ke platform dari owner ini
-                $feeDisbursed = PlatformFee::where('disbursed_status', 'disbursed')
+                $totalFeeOwner = PlatformFee::whereHas('payment', fn($q) => $q->where('status', 'verified'))
                     ->whereHas('payment.booking.vehicle', fn($q) => $q->where('rental_owner_id', $owner->id))
                     ->sum('fee_amount');
 
-                // Fee yang masih pending
-                $feePending = PlatformFee::where('disbursed_status', 'pending')
-                    ->whereHas('payment.booking.vehicle', fn($q) => $q->where('rental_owner_id', $owner->id))
-                    ->sum('fee_amount');
+                $totalPendapatanOwner = Booking::whereHas('vehicle', fn($q) => $q->where('rental_owner_id', $owner->id))
+                    ->whereHas('payment', fn($q) => $q->where('status', 'verified'))
+                    ->selectRaw('SUM(subtotal - platform_fee_amount) as net')
+                    ->value('net') ?? 0;
 
                 return [
-                    'id'               => $owner->id,
-                    'nama'             => $owner->user->name ?? '-',
-                    'bisnis'           => $owner->business_name,
-                    'status'           => $owner->verification_status,
-                    'total_kendaraan'  => $owner->vehicles_count,
-                    'total_booking'    => $totalBooking,
-                    'fee_disbursed'    => $feeDisbursed,
-                    'fee_pending'      => $feePending,
+                    'id'                  => $owner->id,
+                    'nama'                => $owner->user->name ?? '-',
+                    'bisnis'              => $owner->business_name,
+                    'status'              => $owner->verification_status,
+                    'total_kendaraan'     => $owner->vehicles_count,
+                    'total_booking'       => $totalBooking,
+                    'total_fee'           => $totalFeeOwner,
+                    'total_pendapatan'    => $totalPendapatanOwner,
                 ];
             });
-
         // ── 4. Transaksi Terbaru ──────────────────────────────────────────
         $transaksiTerbaru = Booking::with(['user', 'vehicle', 'payment'])
             ->whereIn('status', ['pending', 'confirmed', 'completed'])

@@ -80,7 +80,6 @@
             <div class="flex gap-8 text-sm font-semibold" style="color:#64748B;">
                 <a href="/" class="border-b-2 pb-0.5" style="color:#162740; border-color:#162740;">Katalog</a>
                 <a href="#cara-sewa" class="hover:opacity-80 transition-opacity">Cara Sewa</a>
-                <a href="#kontak"    class="hover:opacity-80 transition-opacity">Kontak</a>
             </div>
         </div>
         <div class="flex items-center gap-4">
@@ -137,3 +136,137 @@
     @stack('scripts')
 </body>
 </html>
+@php
+    $unread = auth()->check() ? auth()->user()->unreadNotifications->count() : 0;
+    $notifList = auth()->check() ? auth()->user()->notifications()->latest()->take(5)->get() : collect();
+@endphp
+
+<div style="position:relative;" id="notif-wrapper">
+
+    {{-- Bell Button --}}
+    <button onclick="toggleNotif(event)"
+        style="background:none;border:none;cursor:pointer;
+               position:relative;padding:.4rem;
+               display:flex;align-items:center;">
+        <svg width="20" height="20" fill="none" stroke="currentColor"
+             stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11
+                     a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5
+                     m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        @if($unread > 0)
+        <span style="position:absolute;top:0;right:0;
+                     background:#EF4444;color:#fff;
+                     font-size:.55rem;font-weight:700;
+                     padding:.1rem .3rem;border-radius:99px;
+                     min-width:.9rem;text-align:center;line-height:1.4;">
+            {{ $unread > 9 ? '9+' : $unread }}
+        </span>
+        @endif
+    </button>
+
+    {{-- Dropdown --}}
+    <div id="notif-dropdown"
+        style="display:none;position:absolute;right:0;top:calc(100% + .5rem);
+               width:320px;background:#fff;border:1px solid #E2E8F0;
+               border-radius:.75rem;box-shadow:0 8px 24px rgba(0,0,0,.1);
+               z-index:999;overflow:hidden;">
+
+        {{-- Header --}}
+        <div style="padding:.85rem 1rem;border-bottom:1px solid #F1F5F9;
+                    display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:.85rem;font-weight:700;color:#162740;">
+                Notifikasi
+                @if($unread > 0)
+                <span style="background:#EF4444;color:#fff;font-size:.6rem;
+                             padding:.1rem .4rem;border-radius:99px;margin-left:.3rem;">
+                    {{ $unread }}
+                </span>
+                @endif
+            </span>
+            @if($unread > 0)
+            <form method="POST" action="{{ route('notifications.readAll') }}"
+                  style="display:inline;">
+                @csrf
+                <button type="submit"
+                    style="background:none;border:none;color:#0EA5E9;
+                           font-size:.72rem;font-weight:600;cursor:pointer;">
+                    Tandai semua dibaca
+                </button>
+            </form>
+            @endif
+        </div>
+
+        {{-- List --}}
+        <div style="max-height:320px;overflow-y:auto;">
+            @forelse($notifList as $notif)
+            @php
+                $data = $notif->data;
+                $icon = match($data['type'] ?? 'system') {
+                    'booking' => '📋',
+                    'payment' => '💰',
+                    'return'  => '🔄',
+                    default   => '🔔',
+                };
+            @endphp
+            <a href="{{ $data['url'] ?? '#' }}"
+               style="display:flex;gap:.75rem;align-items:flex-start;
+                      padding:.85rem 1rem;border-bottom:1px solid #F1F5F9;
+                      text-decoration:none;
+                      background:{{ $notif->read_at ? '#fff' : '#F8FAFF' }};
+                      transition:background .15s;">
+                <span style="font-size:1rem;flex-shrink:0;margin-top:.1rem;">
+                    {{ $icon }}
+                </span>
+                <div style="min-width:0;">
+                    <div style="font-size:.78rem;font-weight:{{ $notif->read_at ? '600' : '700' }};
+                                color:#1E293B;margin-bottom:.15rem;">
+                        {{ $data['title'] ?? '-' }}
+                    </div>
+                    <div style="font-size:.72rem;color:#64748B;
+                                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ $data['message'] ?? '-' }}
+                    </div>
+                    <div style="font-size:.68rem;color:#94A3B8;margin-top:.2rem;">
+                        {{ $notif->created_at->diffForHumans() }}
+                    </div>
+                </div>
+                @if(!$notif->read_at)
+                <div style="width:.4rem;height:.4rem;border-radius:50%;
+                            background:#0EA5E9;flex-shrink:0;margin-top:.4rem;"></div>
+                @endif
+            </a>
+            @empty
+            <div style="padding:2rem;text-align:center;color:#94A3B8;font-size:.8rem;">
+                Belum ada notifikasi
+            </div>
+            @endforelse
+        </div>
+
+        {{-- Footer --}}
+        <a href="{{ route('notifications.index') }}"
+           style="display:block;padding:.75rem;text-align:center;
+                  font-size:.78rem;font-weight:600;color:#0EA5E9;
+                  text-decoration:none;border-top:1px solid #F1F5F9;
+                  background:#FAFAFA;">
+            Lihat semua notifikasi →
+        </a>
+
+    </div>
+</div>
+
+<script>
+function toggleNotif(e) {
+    e.stopPropagation();
+    const dd = document.getElementById('notif-dropdown');
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+// Tutup dropdown kalau klik di luar
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('notif-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('notif-dropdown').style.display = 'none';
+    }
+});
+</script>

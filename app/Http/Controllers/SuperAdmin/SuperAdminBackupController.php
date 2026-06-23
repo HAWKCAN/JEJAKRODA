@@ -1,32 +1,75 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\SuperAdmin;
 
+use App\Http\Controllers\Controller;
+use App\Services\NativeBackupService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 
 class SuperAdminBackupController extends Controller
 {
+    protected NativeBackupService $backupService;
+
+    public function __construct(NativeBackupService $backupService)
+    {
+        $this->backupService = $backupService;
+    }
+
     /**
      * Halaman manajemen backup.
      */
     public function index()
     {
-        return view('superadmin.backup.index');
+        $backups = $this->backupService->list();
+
+        return view('superadmin.backup.index', compact('backups'));
     }
 
     /**
-     * Jalankan backup database secara manual.
+     * Jalankan backup database secara manual (native PHP, tanpa shell exec).
      */
     public function run()
     {
         try {
-            // --only-db agar hanya backup database, bukan seluruh file project
-            Artisan::call('backup:run', ['--only-db' => true]);
+            $filename = $this->backupService->run();
 
-            return back()->with('success', 'Backup database berhasil dijalankan!');
+            return redirect()->route('superAdmin.backup.index')
+                ->with('success', "Backup berhasil dibuat: {$filename}");
+
         } catch (\Exception $e) {
-            return back()->with('error', 'Backup gagal: ' . $e->getMessage());
+            return redirect()->route('superAdmin.backup.index')
+                ->with('error', 'Backup gagal: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Download file backup tertentu.
+     */
+    public function download(string $filename)
+    {
+        $path = 'backups/' . $filename;
+
+        if (!Storage::disk('local')->exists($path)) {
+            abort(404, 'File backup tidak ditemukan.');
+        }
+
+        return Storage::disk('local')->download($path);
+    }
+
+    /**
+     * Hapus file backup tertentu.
+     */
+    public function destroy(string $filename)
+    {
+        $deleted = $this->backupService->delete($filename);
+
+        if ($deleted) {
+            return redirect()->route('superAdmin.backup.index')
+                ->with('success', "Backup {$filename} berhasil dihapus.");
+        }
+
+        return redirect()->route('superAdmin.backup.index')
+            ->with('error', 'File backup tidak ditemukan.');
     }
 }

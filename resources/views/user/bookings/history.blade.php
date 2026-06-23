@@ -12,6 +12,9 @@
                 <h1 class="text-2xl font-bold text-gray-900">Riwayat Pemesanan</h1>
                 <p class="text-gray-500 text-sm mt-1">Pantau status semua pemesanan kendaraan Anda</p>
             </div>
+            <a href="/dashboard" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+                + Pesan Baru
+            </a>
         </div>
 
         {{-- Alert --}}
@@ -23,17 +26,12 @@
                 {{ session('success') }}
             </div>
         @endif
-
         @if(session('error'))
             <div class="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm">
-                <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-9v4a1 1 0 102 0V9a1 1 0 10-2 0zm0-4a1 1 0 112 0 1 1 0 01-2 0z" clip-rule="evenodd"/>
-                </svg>
                 {{ session('error') }}
             </div>
         @endif
 
-        {{-- Tabel / Daftar Booking --}}
         @if($bookings->isEmpty())
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
                 <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,15 +40,18 @@
                 </svg>
                 <p class="text-gray-500 font-medium">Belum ada pemesanan</p>
                 <p class="text-gray-400 text-sm mt-1">Mulai pesan kendaraan untuk perjalanan Anda</p>
+                <a href="/dashboard" class="inline-block mt-4 bg-indigo-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors">
+                    Lihat Katalog
+                </a>
             </div>
         @else
             <div class="space-y-4">
                 @foreach($bookings as $booking)
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
 
                         {{-- Info Kendaraan --}}
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-start gap-4">
                             <div class="w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
                                 @if($booking->vehicle->type === 'motor')
                                     <svg class="w-7 h-7 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,11 +70,20 @@
                                     {{ $booking->start_date->format('d M Y') }} — {{ $booking->end_date->format('d M Y') }}
                                     <span class="font-medium">({{ $booking->total_days }} hari)</span>
                                 </p>
+                                {{-- Status Payment --}}
+                                @if($booking->payment)
+                                    <p class="text-xs mt-1">
+                                        <span class="px-2 py-0.5 rounded-full font-medium
+                                            {{ $booking->payment->status === 'verified' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+                                            Bayar: {{ $booking->payment->status === 'verified' ? 'Terverifikasi ✓' : 'Menunggu Verifikasi' }}
+                                        </span>
+                                    </p>
+                                @endif
                             </div>
                         </div>
 
                         {{-- Status & Aksi --}}
-                        <div class="flex flex-col items-start sm:items-end gap-2">
+                        <div class="flex flex-col items-start sm:items-end gap-2 sm:min-w-[160px]">
                             @php
                                 $colors = [
                                     'pending'   => 'bg-yellow-100 text-yellow-700',
@@ -89,20 +99,19 @@
                                 Rp {{ number_format($booking->total_price, 0, ',', '.') }}
                             </p>
 
-                            {{-- Tombol bayar jika sudah confirmed tapi belum bayar --}}
+                            {{-- Tombol Bayar --}}
                             @if($booking->status === 'confirmed' && !$booking->payment)
                                 <a href="{{ route('payments.create', $booking) }}"
                                    class="inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                                    </svg>
-                                    Bayar Sekarang
+                                    💳 Bayar Sekarang
                                 </a>
                             @endif
 
-                            @if($booking->status === 'confirmed' && $booking->payment)
-                                <span class="text-xs text-gray-400 italic">Menunggu verifikasi pembayaran</span>
-                            @endif
+                            {{-- Tombol Lihat Detail --}}
+                            <a href="{{ route('bookings.show', $booking) }}"
+                               class="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+                                Lihat Detail →
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -11,16 +11,12 @@ class PlatformFee extends Model
         'payment_id',
         'fee_percent',
         'fee_amount',
-        'disbursed_status',
     ];
 
     protected $casts = [
-        'disbursed_status' => 'boolean',
-        'fee_percent'      => 'decimal:2',
-        'fee_amount'       => 'decimal:2',
+        'fee_percent' => 'decimal:2',
+        'fee_amount'  => 'decimal:2',
     ];
-
-    /* ──────────────── Relationships ──────────────── */
 
     public function payment(): BelongsTo
     {

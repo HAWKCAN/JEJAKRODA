@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Manager; 
 
+use App\Http\Controllers\Controller; 
 use App\Models\Booking;
 use App\Models\ReturnLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Notifications\ReturnNotification;
 
 class ReturnController extends Controller
 {
@@ -19,18 +21,16 @@ class ReturnController extends Controller
                 ->with('error', 'Pengembalian hanya bisa dicatat untuk booking berstatus "confirmed".');
         }
 
-        $booking->load(['user', 'vehicle']);
+        // Tambah: pastikan sudah ada payment verified
+        if (!$booking->payment || $booking->payment->status !== 'verified') {
+            return redirect()->route('manager.bookings.index')
+                ->with('error', 'Pembayaran belum diverifikasi.');
+        }
 
+        $booking->load(['user', 'vehicle']);
         return view('manager.returns.create', compact('booking'));
     }
 
-    /**
-     * Simpan data pengembalian dan hitung denda otomatis per jam.
-     *
-     * Rumus denda:
-     *   late_fee = jam_terlambat × (price_per_day ÷ 24)
-     * Artinya: setiap jam keterlambatan dikenakan tarif 1/24 dari harga sewa per hari.
-     */
     public function store(Request $request, Booking $booking)
     {
         $request->validate([
@@ -57,7 +57,12 @@ class ReturnController extends Controller
             'late_fee'    => $lateFee,
             'condition'   => $request->condition,
         ]);
-
+        // Notif ke user
+        $booking->user->notify(new ReturnNotification(
+            'Kendaraan Dikembalikan',
+            "Pengembalian booking #{$booking->id} berhasil dicatat." . ($lateFee > 0 ? ' Denda: Rp ' . number_format($lateFee, 0, ',', '.') : ''),
+            url('/bookings/' . $booking->id)
+        ));
         // Update status booking dan ketersediaan kendaraan
         $booking->update(['status' => 'completed']);
         $booking->vehicle->update(['status' => 'available']);

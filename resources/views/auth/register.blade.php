@@ -64,12 +64,44 @@
 
         <div>
             <label class="block text-sm font-medium mb-1" style="color: #4A4540;">Daftar sebagai</label>
-            <select name="role"
+            <select name="role" id="role"
                 class="w-full rounded-lg px-3 py-2 text-sm outline-none"
-                style="border: 1px solid #D4CFC6; color: #1A1A1A; background-color: #FFFFFF;">
+                style="border: 1px solid #D4CFC6; color: #1A1A1A; background-color: #FFFFFF;"
+                onchange="document.getElementById('manager-fields').style.display = this.value === 'manager' ? 'block' : 'none'">
                 <option value="user" {{ old('role') === 'user' ? 'selected' : '' }}>Pelanggan</option>
                 <option value="manager" {{ old('role') === 'manager' ? 'selected' : '' }}>Pemilik Rental</option>
             </select>
+        </div>
+
+        <div id="manager-fields" class="space-y-4" style="display: {{ old('role') === 'manager' ? 'block' : 'none' }};">
+
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: #4A4540;">Nama Usaha</label>
+                <input type="text" name="business_name" value="{{ old('business_name') }}"
+                    placeholder="Contoh: Aspal Seru Rental"
+                    class="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                    style="border: 1px solid #D4CFC6; color: #1A1A1A; background-color: #FFFFFF;"
+                    onfocus="this.style.borderColor='#0EA5E9'" onblur="this.style.borderColor='#D4CFC6'">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: #4A4540;">Alamat Usaha</label>
+                <input type="text" name="business_address" value="{{ old('business_address') }}"
+                    placeholder="Alamat lengkap usaha"
+                    class="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                    style="border: 1px solid #D4CFC6; color: #1A1A1A; background-color: #FFFFFF;"
+                    onfocus="this.style.borderColor='#0EA5E9'" onblur="this.style.borderColor='#D4CFC6'">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-1" style="color: #4A4540;">NPWP (opsional)</label>
+                <input type="text" name="tax_number" value="{{ old('tax_number') }}"
+                    placeholder="Nomor NPWP"
+                    class="w-full rounded-lg px-3 py-2 text-sm outline-none"
+                    style="border: 1px solid #D4CFC6; color: #1A1A1A; background-color: #FFFFFF;"
+                    onfocus="this.style.borderColor='#0EA5E9'" onblur="this.style.borderColor='#D4CFC6'">
+            </div>
+
         </div>
 
         <button type="submit"

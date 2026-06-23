@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.manager')
 
 @section('title', 'Detail Booking #' . $booking->id)
 
@@ -156,6 +156,7 @@
 
                 {{-- Panel Aksi Manager --}}
                 @if($booking->status === 'pending')
+                
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
                     <h3 class="font-semibold text-gray-800">Tindakan</h3>
 
@@ -189,8 +190,22 @@
                     </div>
                 </div>
                 @endif
+                {{-- Verifikasi Payment --}}
+                @if($booking->status === 'confirmed' && $booking->payment && $booking->payment->status === 'pending')
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                    <h3 class="font-semibold text-gray-800 mb-3">Verifikasi Pembayaran</h3>
+                    <form action="{{ route('manager.bookings.verifyPayment', $booking) }}" method="POST">
+                        @csrf
+                        <button type="submit"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors"
+                                onclick="return confirm('Verifikasi pembayaran ini?')">
+                            ✓ Verifikasi Pembayaran
+                        </button>
+                    </form>
+                </div>
+                @endif
 
-                @if($booking->status === 'confirmed' && !$booking->returnLog)
+                @if($booking->status === 'confirmed' && !$booking->returnLog && $booking->payment && $booking->payment->status === 'verified')
                 <a href="{{ route('manager.returns.create', $booking) }}"
                    class="flex items-center justify-center w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors">
                     Catat Pengembalian

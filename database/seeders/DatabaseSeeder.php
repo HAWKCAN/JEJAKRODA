@@ -36,5 +36,9 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password123'),
             'role' => 'user',
         ]);
+
+        $this->call([
+            VehicleSeeder::class,
+        ]);
     }
 }
